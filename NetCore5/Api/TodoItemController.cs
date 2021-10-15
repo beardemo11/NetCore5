@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using NetCore5.Dtos;
+using NetCore5.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,11 +15,32 @@ namespace NetCore5.Api
     [ApiController]
     public class TodoItemController : ControllerBase
     {
+        private readonly TodoContext _db;
+
+        public TodoItemController(TodoContext context)
+        {
+            _db = context;
+        }
+
         // GET: api/<TodoItemController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<TodoListSelectDto> Get()
         {
-            return new string[] { "value1", "value2" };
+            var result = _db.TodoLists
+                .Include(x => x.UpdateEmployee)
+                .Include(x => x.InsertEmployee)
+                .Select(x => new TodoListSelectDto
+                {
+                    Enable = x.Enable,
+                    InsertEmployeeName = x.InsertEmployee.Name,
+                    InsertTime = x.InsertTime,
+                    Name = x.Name,
+                    Orders = x.Orders,
+                    TodoId = x.TodoId,
+                    UpdateEmployeeName = x.UpdateEmployee.Name,
+                    UpdateTime = x.UpdateTime
+                });
+            return result;
         }
 
         // GET api/<TodoItemController>/5
